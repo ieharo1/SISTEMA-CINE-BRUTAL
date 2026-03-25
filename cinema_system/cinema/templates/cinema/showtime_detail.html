@@ -1,0 +1,82 @@
+{% extends 'cinema/base.html' %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card bg-black border-secondary">
+      <div class="card-body">
+        <h2>{{ showtime.movie.title }}</h2>
+        <p>{{ showtime.starts_at|date:'d/m/Y H:i' }} · Sala {{ showtime.auditorium.name }} · ${{ showtime.base_price }} por asiento</p>
+        <div class="alert alert-secondary text-center">PANTALLA</div>
+        <div class="table-responsive">
+          <table class="table table-dark table-bordered align-middle text-center">
+            {% for row in seats %}
+              <tr>
+                <th>{{ row.row }}</th>
+                {% for seat in row.numbers %}
+                  <td>
+                    <button
+                      class="btn btn-sm {% if seat.taken %}btn-danger disabled{% else %}btn-outline-success seat-btn{% endif %}"
+                      {% if not seat.taken %}data-seat="{{ row.row }}{{ seat.number }}"{% endif %}>
+                      {{ seat.number }}
+                    </button>
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card bg-black border-secondary">
+      <div class="card-body">
+        <h4>Confirmar compra</h4>
+        <form method="post" action="{% url 'reserve_seats' showtime.id %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" name="customer_name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" name="customer_email" required>
+          </div>
+          <input id="selectedSeatsInput" type="hidden" name="selected_seats">
+          <div class="mb-3">
+            <label class="form-label">Butacas</label>
+            <div id="selectedSeats" class="p-2 rounded bg-dark border">Ninguna</div>
+          </div>
+          <button class="btn btn-warning w-100">Pagar Entradas</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const selected = new Set();
+  const output = document.getElementById('selectedSeats');
+  const input = document.getElementById('selectedSeatsInput');
+
+  document.querySelectorAll('.seat-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const seat = btn.dataset.seat;
+      if (selected.has(seat)) {
+        selected.delete(seat);
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-success');
+      } else {
+        selected.add(seat);
+        btn.classList.remove('btn-outline-success');
+        btn.classList.add('btn-success');
+      }
+      const value = Array.from(selected).sort();
+      output.textContent = value.length ? value.join(', ') : 'Ninguna';
+      input.value = value.join(',');
+    });
+  });
+</script>
+{% endblock %}

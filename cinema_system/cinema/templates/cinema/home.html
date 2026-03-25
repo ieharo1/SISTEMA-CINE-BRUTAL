@@ -1,0 +1,32 @@
+{% extends 'cinema/base.html' %}
+{% block content %}
+<section class="text-center mb-4">
+  <h1 class="display-5 fw-bold">Sistema de Cine Full Stack</h1>
+  <p class="lead">Reserva butacas en tiempo real y vende snacks sin complicaciones.</p>
+</section>
+
+<div class="row g-4">
+{% for show in showtimes %}
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 bg-black text-light border-secondary">
+      {% if show.movie.poster_url %}
+      <img src="{{ show.movie.poster_url }}" class="card-img-top" alt="{{ show.movie.title }}">
+      {% endif %}
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title">{{ show.movie.title }}</h5>
+        <p class="small text-secondary">{{ show.movie.duration_minutes }} min · {{ show.movie.age_rating }}</p>
+        <p class="card-text">{{ show.movie.synopsis|truncatewords:20 }}</p>
+        <ul class="list-group list-group-flush mb-3">
+          <li class="list-group-item bg-black text-light">Sala: {{ show.auditorium.name }}</li>
+          <li class="list-group-item bg-black text-light">Inicio: {{ show.starts_at|date:'d/m/Y H:i' }}</li>
+          <li class="list-group-item bg-black text-light">Desde: ${{ show.base_price }}</li>
+        </ul>
+        <a href="{% url 'showtime_detail' show.id %}" class="btn btn-warning mt-auto">Elegir Butacas</a>
+      </div>
+    </div>
+  </div>
+{% empty %}
+  <div class="col-12"><div class="alert alert-info">No hay funciones programadas.</div></div>
+{% endfor %}
+</div>
+{% endblock %}
